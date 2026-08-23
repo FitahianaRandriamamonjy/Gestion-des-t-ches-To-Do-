@@ -1,7 +1,8 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
-        server_version: '15'
+        driver: 'pdo_pgsql'
+        server_version: '16'
         use_savepoints: true
     orm:
         auto_generate_proxy_classes: true
