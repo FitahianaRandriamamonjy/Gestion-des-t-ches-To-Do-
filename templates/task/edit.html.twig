@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la tâche - TaskFlow{% endblock %}
+{% block page_title %}Modifier la tâche{% endblock %}
+{% block page_subtitle %}{{ task.title }}{% endblock %}
+{% block topbar_actions %}
+    <a href="{{ path('task_index') }}" class="df-btn-ghost"><i class="bi bi-arrow-left"></i> Retour</a>
+{% endblock %}
+
+{% block body %}
+    <div class="df-card" style="max-width:720px;">
+        {{ include('task/_form.html.twig') }}
+    </div>
+{% endblock %}

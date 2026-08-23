@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}TaskFlow{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="dashboard-body">
+<div class="df-shell">
+
+    <aside class="df-sidebar">
+        <a href="{{ path('dashboard') }}" class="df-logo" style="text-decoration:none;">
+            <div class="df-logo-icon"><i class="bi bi-check2"></i></div>
+            <div class="df-logo-text">TaskFlow</div>
+        </a>
+        <div class="df-tagline">Organisez. Priorisez. Accomplissez.</div>
+
+        <ul class="df-nav">
+            <li><a href="{{ path('dashboard') }}" class="{{ app.request.attributes.get('_route') == 'dashboard' ? 'active' }}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a></li>
+            <li><a href="{{ path('task_index') }}" class="{{ app.request.attributes.get('_route') starts with 'task_' ? 'active' }}">
+                <i class="bi bi-list-check"></i> Mes tâches
+            </a></li>
+            <li><a href="{{ path('team_index') }}" class="{{ app.request.attributes.get('_route') == 'team_index' ? 'active' }}">
+                <i class="bi bi-people"></i> Équipe
+            </a></li>
+            <li><a href="{{ path('calendar_index') }}" class="{{ app.request.attributes.get('_route') == 'calendar_index' ? 'active' }}">
+                <i class="bi bi-calendar3"></i> Calendrier
+            </a></li>
+            <li><a href="{{ path('stats_index') }}" class="{{ app.request.attributes.get('_route') == 'stats_index' ? 'active' }}">
+                <i class="bi bi-bar-chart"></i> Statistiques
+            </a></li>
+            <li><a href="{{ path('notification_index') }}" class="{{ app.request.attributes.get('_route') == 'notification_index' ? 'active' }}">
+                <i class="bi bi-bell"></i> Notifications
+                {% if app.user %}
+                    {% set notifCount = app_notifications_count() %}
+                    {% if notifCount > 0 %}<span class="df-nav-badge">{{ notifCount }}</span>{% endif %}
+                {% endif %}
+            </a></li>
+            <li><a href="{{ path('settings_index') }}" class="{{ app.request.attributes.get('_route') == 'settings_index' ? 'active' }}">
+                <i class="bi bi-gear"></i> Paramètres
+            </a></li>
+        </ul>
+
+        <div class="df-profile">
+            <a href="{{ path('app_profile') }}" class="df-profile-card" style="text-decoration:none; color:inherit;">
+                <div class="df-avatar" style="background:{{ app.user ? app.user.fullName|avatar_color : '#EDEBFC' }}22; color:{{ app.user ? app.user.fullName|avatar_color : 'var(--purple-dark)' }};">
+                    {{ app.user ? app.user.fullName|initials : 'U' }}
+                </div>
+                <div>
+                    <div class="df-profile-name">{{ app.user ? app.user.fullName : 'Invité' }}</div>
+                    <div class="df-profile-role">{{ app.user and 'ROLE_ADMIN' in app.user.roles ? 'Administrateur' : 'Membre de l\'équipe' }}</div>
+                </div>
+                <i class="bi bi-chevron-right ms-auto text-muted"></i>
+            </a>
+            {% if app.user %}
+                <div class="df-productivity">
+                    <div class="df-productivity-label">
+                        <span>Niveau de productivité</span>
+                        <span>{{ app_productivity() }}%</span>
+                    </div>
+                    <div class="df-progress">
+                        <div class="df-progress-bar" style="width: {{ app_productivity() }}%"></div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if app.user %}
+                <a href="{{ path('app_logout') }}" class="df-logout-link"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <main class="df-main">
+        <div class="df-topbar">
+            <div class="df-greeting">
+                <h1>{% block page_title %}Tableau de bord{% endblock %}</h1>
+                <p>{% block page_subtitle %}Voici ce qui se passe aujourd'hui.{% endblock %}</p>
+            </div>
+            <div class="df-topbar-actions">
+                {% block topbar_actions %}
+                    <div class="df-notif-wrap">
+                        <button class="df-bell" type="button" onclick="document.getElementById('notifDropdown').classList.toggle('show')">
+                            <i class="bi bi-bell"></i>
+                            {% set notifCount = app.user ? app_notifications_count() : 0 %}
+                            {% if notifCount > 0 %}<span class="dot">{{ notifCount > 9 ? '9+' : notifCount }}</span>{% endif %}
+                        </button>
+                        <div class="df-notif-dropdown" id="notifDropdown">
+                            <div class="df-notif-dropdown-header">
+                                <strong>Notifications</strong>
+                                <a href="{{ path('notification_index') }}">Voir tout</a>
+                            </div>
+                            {% set notifs = app.user ? app_notifications()|slice(0, 5) : [] %}
+                            {% if notifs is empty %}
+                                <div class="df-notif-empty">Aucune notification pour le moment.</div>
+                            {% else %}
+                                {% for n in notifs %}
+                                    <a href="{{ n.taskId ? path('task_show', {id: n.taskId}) : '#' }}" class="df-notif-item df-notif-{{ n.type }}">
+                                        <div class="df-notif-icon"><i class="bi {{ n.icon }}"></i></div>
+                                        <div>
+                                            <div class="df-notif-title">{{ n.title }}</div>
+                                            <div class="df-notif-msg">{{ n.message }}</div>
+                                            <div class="df-notif-time">{{ n.date|time_ago }}</div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <form class="df-search" method="get" action="{{ path('task_index') }}">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="q" placeholder="Rechercher une tâche..." value="{{ app.request.query.get('q') }}">
+                    </form>
+                    <a href="{{ path('task_new') }}" class="df-btn-primary">
+                        <i class="bi bi-plus-lg"></i> Nouvelle tâche
+                    </a>
+                {% endblock %}
+            </div>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </main>
+</div>
+
+<script>
+    document.addEventListener('click', function (e) {
+        const wrap = document.querySelector('.df-notif-wrap');
+        const dropdown = document.getElementById('notifDropdown');
+        if (wrap && dropdown && !wrap.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+</script>
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,32 @@
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Inscription - TaskFlow{% endblock %}
+
+{% block auth_body %}
+    <h1 class="df-auth-title">Créer un compte</h1>
+    <p class="df-auth-subtitle">Rejoignez votre équipe sur TaskFlow.</p>
+
+    {{ form_start(registrationForm, {attr: {class: 'df-form'}}) }}
+        <div class="df-form-group">
+            {{ form_label(registrationForm.fullName) }}
+            {{ form_widget(registrationForm.fullName) }}
+            {{ form_errors(registrationForm.fullName) }}
+        </div>
+        <div class="df-form-group">
+            {{ form_label(registrationForm.email) }}
+            {{ form_widget(registrationForm.email) }}
+            {{ form_errors(registrationForm.email) }}
+        </div>
+        <div class="df-form-group">
+            {{ form_label(registrationForm.plainPassword) }}
+            {{ form_widget(registrationForm.plainPassword) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+
+        <button type="submit" class="df-btn-primary df-btn-block">S'inscrire</button>
+    {{ form_end(registrationForm) }}
+
+    <p class="df-auth-footer">
+        Déjà un compte ? <a href="{{ path('app_login') }}">Se connecter</a>
+    </p>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Notifications - TaskFlow{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}{{ notifications|length }} notification{{ notifications|length > 1 ? 's' : '' }}.{% endblock %}
+{% block topbar_actions %}{% endblock %}
+
+{% block body %}
+    <div class="df-card">
+        {% if notifications is empty %}
+            <p class="text-muted text-center py-4 mb-0">Vous êtes à jour, aucune notification.</p>
+        {% else %}
+            <div class="df-notif-list">
+                {% for n in notifications %}
+                    <a href="{{ n.taskId ? path('task_show', {id: n.taskId}) : '#' }}" class="df-notif-item full df-notif-{{ n.type }}">
+                        <div class="df-notif-icon"><i class="bi {{ n.icon }}"></i></div>
+                        <div>
+                            <div class="df-notif-title">{{ n.title }}</div>
+                            <div class="df-notif-msg">{{ n.message }}</div>
+                            <div class="df-notif-time">{{ n.date|time_ago }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

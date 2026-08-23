@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paramètres - TaskFlow{% endblock %}
+{% block page_title %}Paramètres{% endblock %}
+{% block page_subtitle %}Gérez votre profil et votre sécurité.{% endblock %}
+{% block topbar_actions %}{% endblock %}
+
+{% block body %}
+    <div class="df-settings-grid">
+        <div class="df-card">
+            <div class="df-card-header"><h2><i class="bi bi-person-circle"></i> Informations du profil</h2></div>
+            {{ form_start(profileForm, {attr: {class: 'df-form'}}) }}
+                <div class="df-form-group">
+                    {{ form_label(profileForm.fullName) }}
+                    {{ form_widget(profileForm.fullName) }}
+                    {{ form_errors(profileForm.fullName) }}
+                </div>
+                <div class="df-form-group">
+                    {{ form_label(profileForm.email) }}
+                    {{ form_widget(profileForm.email) }}
+                    {{ form_errors(profileForm.email) }}
+                </div>
+                <button type="submit" class="df-btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+            {{ form_end(profileForm) }}
+        </div>
+
+        <div class="df-card">
+            <div class="df-card-header"><h2><i class="bi bi-shield-lock"></i> Mot de passe</h2></div>
+            {{ form_start(passwordForm, {attr: {class: 'df-form'}}) }}
+                <div class="df-form-group">
+                    {{ form_label(passwordForm.currentPassword) }}
+                    {{ form_widget(passwordForm.currentPassword) }}
+                    {{ form_errors(passwordForm.currentPassword) }}
+                </div>
+                <div class="df-form-group">
+                    {{ form_label(passwordForm.newPassword) }}
+                    {{ form_widget(passwordForm.newPassword) }}
+                    {{ form_errors(passwordForm.newPassword) }}
+                </div>
+                <button type="submit" class="df-btn-primary"><i class="bi bi-shield-check"></i> Changer le mot de passe</button>
+            {{ form_end(passwordForm) }}
+        </div>
+    </div>
+{% endblock %}

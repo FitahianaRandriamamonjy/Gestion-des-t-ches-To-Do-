@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - TaskFlow{% endblock %}
+{% block page_title %}Statistiques{% endblock %}
+{% block page_subtitle %}Vue d'ensemble des performances de l'équipe.{% endblock %}
+{% block topbar_actions %}{% endblock %}
+
+{% block body %}
+    <div class="df-content" style="grid-template-columns: 1fr;">
+        <div class="df-card">
+            <div class="df-card-header"><h2>Tendance (8 dernières semaines)</h2></div>
+            <div class="df-chart-wrap"><canvas id="trendChart"></canvas></div>
+        </div>
+
+        <div class="df-stats-3col">
+            <div class="df-card">
+                <div class="df-card-header"><h2>Par priorité</h2></div>
+                <div class="df-chart-wrap small"><canvas id="priorityChart"></canvas></div>
+            </div>
+            <div class="df-card">
+                <div class="df-card-header"><h2>Par statut</h2></div>
+                <div class="df-chart-wrap small"><canvas id="statusChart"></canvas></div>
+            </div>
+            <div class="df-card">
+                <div class="df-card-header"><h2>Classement</h2></div>
+                <div class="df-ranking">
+                    {% for row in ranking %}
+                        <div class="df-ranking-row">
+                            <span class="df-ranking-pos">#{{ loop.index }}</span>
+                            <span class="df-avatar-sm" style="background:{{ row.user.fullName|avatar_color }}22; color:{{ row.user.fullName|avatar_color }};">{{ row.user.fullName|initials }}</span>
+                            <span class="df-ranking-name">{{ row.user.fullName }}</span>
+                            <span class="df-ranking-score">{{ row.done }}</span>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Aucune donnée.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: {{ trend.labels|json_encode|raw }},
+                datasets: [
+                    { label: 'Créées', data: {{ trend.created|json_encode|raw }}, borderColor: '#7C6FEF', backgroundColor: 'rgba(124,111,239,0.12)', fill: true, tension: 0.4 },
+                    { label: 'Terminées', data: {{ trend.done|json_encode|raw }}, borderColor: '#2FBE7F', backgroundColor: 'rgba(47,190,127,0.12)', fill: true, tension: 0.4 }
+                ]
+            },
+            options: { scales: { y: { beginAtZero: true, grid: { color: '#F1F0F8' } }, x: { grid: { display: false } } } }
+        });
+
+        new Chart(document.getElementById('priorityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Basse', 'Moyenne', 'Haute'],
+                datasets: [{ data: [{{ priorityCounts.low }}, {{ priorityCounts.medium }}, {{ priorityCounts.high }}], backgroundColor: ['#4EA8DE', '#F5A623', '#EF5350'] }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+        });
+
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['À faire', 'En cours', 'Terminées'],
+                datasets: [{ data: [{{ statusCounts.todo }}, {{ statusCounts.in_progress }}, {{ statusCounts.done }}], backgroundColor: ['#F5A623', '#7C6FEF', '#2FBE7F'] }]
+            },
+            options: { cutout: '60%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+        });
+    </script>
+{% endblock %}

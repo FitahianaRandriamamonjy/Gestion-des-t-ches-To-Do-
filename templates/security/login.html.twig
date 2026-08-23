@@ -1,0 +1,31 @@
+{% extends 'auth_base.html.twig' %}
+
+{% block title %}Connexion - TaskFlow{% endblock %}
+
+{% block auth_body %}
+    <h1 class="df-auth-title">Bon retour 👋</h1>
+    <p class="df-auth-subtitle">Connectez-vous pour retrouver vos tâches.</p>
+
+    {% if error %}
+        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    <form method="post" class="df-form">
+        <div class="df-form-group">
+            <label for="username">Email</label>
+            <input type="email" value="{{ last_username }}" name="_username" id="username" class="df-input" autocomplete="email" required autofocus>
+        </div>
+        <div class="df-form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" name="_password" id="password" class="df-input" autocomplete="current-password" required>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button class="df-btn-primary df-btn-block" type="submit">Se connecter</button>
+    </form>
+
+    <p class="df-auth-footer">
+        Pas encore de compte ? <a href="{{ path('app_register') }}">S'inscrire</a>
+    </p>
+{% endblock %}

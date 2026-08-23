@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes tâches - TaskFlow{% endblock %}
+{% block page_title %}Mes tâches{% endblock %}
+{% block page_subtitle %}{{ totalFiltered }} tâche{{ totalFiltered > 1 ? 's' : '' }} au total.{% endblock %}
+
+{% block body %}
+    <div class="df-card">
+        <div class="df-badges-row mb-3">
+            <span class="df-count-badge todo"><i></i> À faire : {{ counts.todo|default(0) }}</span>
+            <span class="df-count-badge in_progress"><i></i> En cours : {{ counts.in_progress|default(0) }}</span>
+            <span class="df-count-badge done"><i></i> Terminées : {{ counts.done|default(0) }}</span>
+        </div>
+
+        <form method="get" class="df-filters">
+            <div class="df-filter-field">
+                <label>Recherche</label>
+                <input type="text" name="q" value="{{ currentQuery }}" placeholder="Titre de la tâche...">
+            </div>
+            <div class="df-filter-field">
+                <label>Statut</label>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">Tous</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.value }}" {{ currentStatus == status.value ? 'selected' }}>{{ status.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="df-filter-field">
+                <label>Priorité</label>
+                <select name="priority" onchange="this.form.submit()">
+                    <option value="">Toutes</option>
+                    {% for priority in priorities %}
+                        <option value="{{ priority.value }}" {{ currentPriority == priority.value ? 'selected' }}>{{ priority.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="df-filter-field">
+                <label>Assignée à</label>
+                <select name="assignedTo" onchange="this.form.submit()">
+                    <option value="">Tous</option>
+                    {% for user in users %}
+                        <option value="{{ user.id }}" {{ currentAssignedTo == user.id ? 'selected' }}>{{ user.fullName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="df-btn-primary df-btn-sm"><i class="bi bi-search"></i> Filtrer</button>
+            <a href="{{ path('task_index') }}" class="df-btn-ghost">Réinitialiser</a>
+        </form>
+    </div>
+
+    <div class="df-card mt-3">
+        {% if tasks is empty %}
+            <p class="text-muted text-center py-4 mb-0">Aucune tâche ne correspond à ces critères.</p>
+        {% else %}
+            <table class="df-table">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Priorité</th>
+                        <th>Statut</th>
+                        <th>Échéance</th>
+                        <th>Assignée à</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('task_show', {id: task.id}) }}" class="df-task-title" style="text-decoration:none;">
+                                {{ task.title }}
+                            </a>
+                            {% if task.isOverdue %}<i class="bi bi-exclamation-triangle-fill text-danger ms-1" title="En retard"></i>{% endif %}
+                        </td>
+                        <td><span class="df-badge {{ task.priority.value == 'high' ? 'high' : (task.priority.value == 'medium' ? 'medium' : 'low') }}">{{ task.priority.label }}</span></td>
+                        <td>
+                            <form method="post" action="" class="d-inline">
+                                <select class="df-mini-select status-select" data-task-id="{{ task.id }}"
+                                        onchange="document.getElementById('status-form-{{ task.id }}-' + this.value).submit()">
+                                    {% for status in statuses %}
+                                        <option value="{{ status.value }}" {{ task.status.value == status.value ? 'selected' }}>{{ status.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                            {% for status in statuses %}
+                                <form id="status-form-{{ task.id }}-{{ status.value }}" method="post"
+                                      action="{{ path('task_change_status', {id: task.id, status: status.value}) }}" class="d-none">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('status' ~ task.id) }}">
+                                </form>
+                            {% endfor %}
+                        </td>
+                        <td>{{ task.dueDate ? task.dueDate|date('d/m/Y') : '—' }}</td>
+                        <td>
+                            <div class="df-assign-popover">
+                                <button type="button" class="df-assign-trigger" onclick="dfTogglePopover(this)">
+                                    {% if task.assignedTo %}
+                                        <span class="df-avatar-sm" style="background:{{ task.assignedTo.fullName|avatar_color }}22; color:{{ task.assignedTo.fullName|avatar_color }};">{{ task.assignedTo.fullName|initials }}</span>
+                                        <span>{{ task.assignedTo.fullName }}</span>
+                                    {% else %}
+                                        <span class="df-avatar-sm empty"><i class="bi bi-person"></i></span>
+                                        <span class="text-muted">Non assignée</span>
+                                    {% endif %}
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                                <div class="df-assign-menu">
+                                    <form method="post" action="{{ path('task_assign', {id: task.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('assign' ~ task.id) }}">
+                                        <button type="submit" name="userId" value="" class="df-assign-option">
+                                            <span class="df-avatar-sm empty"><i class="bi bi-person"></i></span> Non assignée
+                                        </button>
+                                        {% for user in users %}
+                                            <button type="submit" name="userId" value="{{ user.id }}" class="df-assign-option {{ task.assignedTo and task.assignedTo.id == user.id ? 'selected' }}">
+                                                <span class="df-avatar-sm" style="background:{{ user.fullName|avatar_color }}22; color:{{ user.fullName|avatar_color }};">{{ user.fullName|initials }}</span>
+                                                {{ user.fullName }}
+                                            </button>
+                                        {% endfor %}
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ path('task_show', {id: task.id}) }}" class="df-icon-btn" title="Voir"><i class="bi bi-eye"></i></a>
+                            <a href="{{ path('task_edit', {id: task.id}) }}" class="df-icon-btn" title="Modifier"><i class="bi bi-pencil"></i></a>
+                            {% if (task.createdBy and app.user and task.createdBy.userIdentifier == app.user.userIdentifier) or is_granted('ROLE_ADMIN') %}
+                                <form method="post" action="{{ path('task_delete', {id: task.id}) }}" class="d-inline"
+                                      onsubmit="return confirm('Supprimer cette tâche ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ task.id) }}">
+                                    <button type="submit" class="df-icon-btn danger" title="Supprimer"><i class="bi bi-trash"></i></button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            {% if totalPages > 1 %}
+                <div class="df-pagination">
+                    <a class="df-page-btn {{ currentPage <= 1 ? 'disabled' }}"
+                       href="{{ currentPage > 1 ? path('task_index', app.request.query.all|merge({page: currentPage - 1})) : '#' }}">
+                        <i class="bi bi-chevron-left"></i> Précédent
+                    </a>
+                    <span class="df-page-info">Page {{ currentPage }} / {{ totalPages }}</span>
+                    <a class="df-page-btn {{ currentPage >= totalPages ? 'disabled' }}"
+                       href="{{ currentPage < totalPages ? path('task_index', app.request.query.all|merge({page: currentPage + 1})) : '#' }}">
+                        Suivant <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        function dfTogglePopover(btn) {
+            const menu = btn.nextElementSibling;
+            document.querySelectorAll('.df-assign-menu.show').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+            menu.classList.toggle('show');
+        }
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.df-assign-popover')) {
+                document.querySelectorAll('.df-assign-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier - TaskFlow{% endblock %}
+{% block page_title %}Calendrier{% endblock %}
+{% block page_subtitle %}{{ current|date('F Y')|capitalize }}{% endblock %}
+{% block topbar_actions %}
+    <a href="{{ path('calendar_index', {month: prevMonth}) }}" class="df-btn-ghost"><i class="bi bi-chevron-left"></i></a>
+    <a href="{{ path('calendar_index') }}" class="df-btn-ghost">Aujourd'hui</a>
+    <a href="{{ path('calendar_index', {month: nextMonth}) }}" class="df-btn-ghost"><i class="bi bi-chevron-right"></i></a>
+{% endblock %}
+
+{% block body %}
+    <div class="df-card">
+        <div class="df-calendar">
+            <div class="df-calendar-head">
+                <div>Lun</div><div>Mar</div><div>Mer</div><div>Jeu</div><div>Ven</div><div>Sam</div><div>Dim</div>
+            </div>
+            {% for week in weeks %}
+                <div class="df-calendar-week">
+                    {% for day in week %}
+                        <div class="df-calendar-day {{ day.inMonth ? '' : 'muted' }} {{ day.isToday ? 'today' : '' }}">
+                            <div class="df-calendar-day-num">{{ day.date|date('j') }}</div>
+                            {% for task in day.tasks|slice(0, 3) %}
+                                <a href="{{ path('task_show', {id: task.id}) }}" class="df-calendar-task {{ task.priority.value }}">
+                                    {{ task.title|slice(0, 18) }}{{ task.title|length > 18 ? '…' }}
+                                </a>
+                            {% endfor %}
+                            {% if day.tasks|length > 3 %}
+                                <div class="df-calendar-more">+{{ day.tasks|length - 3 }} autre(s)</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

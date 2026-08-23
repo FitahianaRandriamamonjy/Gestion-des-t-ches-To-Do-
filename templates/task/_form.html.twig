@@ -1,0 +1,35 @@
+{{ form_start(form, {attr: {class: 'df-form'}}) }}
+    <div class="df-form-group">
+        {{ form_label(form.title) }}
+        {{ form_widget(form.title, {attr: {class: 'df-input'}}) }}
+        {{ form_errors(form.title) }}
+    </div>
+    <div class="df-form-group">
+        {{ form_label(form.description) }}
+        {{ form_widget(form.description, {attr: {class: 'df-input'}}) }}
+        {{ form_errors(form.description) }}
+    </div>
+    <div class="df-form-row">
+        <div class="df-form-group">
+            {{ form_label(form.priority) }}
+            {{ form_widget(form.priority, {attr: {class: 'df-input'}}) }}
+        </div>
+        <div class="df-form-group">
+            {{ form_label(form.status) }}
+            {{ form_widget(form.status, {attr: {class: 'df-input'}}) }}
+        </div>
+        <div class="df-form-group">
+            {{ form_label(form.dueDate) }}
+            {{ form_widget(form.dueDate, {attr: {class: 'df-input'}}) }}
+        </div>
+    </div>
+    <div class="df-form-group">
+        {{ form_label(form.assignedTo) }}
+        {{ form_widget(form.assignedTo, {attr: {class: 'df-input'}}) }}
+    </div>
+
+    <div class="df-form-actions">
+        <button type="submit" class="df-btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+        <a href="{{ path('task_index') }}" class="df-btn-ghost">Annuler</a>
+    </div>
+{{ form_end(form) }}

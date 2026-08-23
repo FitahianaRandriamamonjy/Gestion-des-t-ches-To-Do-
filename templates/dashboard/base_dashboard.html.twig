@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}TaskFlow{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="dashboard-body">
+<div class="df-shell">
+
+    <aside class="df-sidebar">
+        <div class="df-logo">
+            <div class="df-logo-icon"><i class="bi bi-check2"></i></div>
+            <div class="df-logo-text">TaskFlow</div>
+        </div>
+        <div class="df-tagline">Organisez. Priorisez. Accomplissez.</div>
+
+        <ul class="df-nav">
+            <li><a href="{{ path('dashboard') }}" class="{{ app.request.attributes.get('_route') == 'dashboard' ? 'active' }}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a></li>
+            <li><a href="{{ path('task_index') }}" class="{{ app.request.attributes.get('_route') starts with 'task_' ? 'active' }}">
+                <i class="bi bi-list-check"></i> Mes tâches
+            </a></li>
+            <li><a href="#"><i class="bi bi-people"></i> Équipe</a></li>
+            <li><a href="#"><i class="bi bi-calendar3"></i> Calendrier</a></li>
+            <li><a href="#"><i class="bi bi-bar-chart"></i> Statistiques</a></li>
+            <li><a href="#"><i class="bi bi-bell"></i> Notifications <span class="df-nav-badge">3</span></a></li>
+            <li><a href="#"><i class="bi bi-gear"></i> Paramètres</a></li>
+        </ul>
+
+        <div class="df-profile">
+            <div class="df-profile-card">
+                <div class="df-avatar">{{ app.user ? app.user.fullName|slice(0,1)|upper : 'U' }}</div>
+                <div>
+                    <div class="df-profile-name">{{ app.user ? app.user.fullName : 'Invité' }}</div>
+                    <div class="df-profile-role">Chef de projet</div>
+                </div>
+                <i class="bi bi-chevron-down ms-auto text-muted"></i>
+            </div>
+            <div class="df-productivity">
+                <div class="df-productivity-label">
+                    <span>Niveau de productivité</span>
+                    <span>{{ productivity|default(72) }}%</span>
+                </div>
+                <div class="df-progress">
+                    <div class="df-progress-bar" style="width: {{ productivity|default(72) }}%"></div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="df-main">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block dashboard_body %}{% endblock %}
+    </main>
+</div>
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Équipe - TaskFlow{% endblock %}
+{% block page_title %}Équipe{% endblock %}
+{% block page_subtitle %}{{ members|length }} membre{{ members|length > 1 ? 's' : '' }}.{% endblock %}
+{% block topbar_actions %}{% endblock %}
+
+{% block body %}
+    <div class="df-team-grid">
+        {% for member in members %}
+            <div class="df-card df-team-card">
+                <div class="df-team-header">
+                    <span class="df-avatar-lg" style="background:{{ member.user.fullName|avatar_color }}22; color:{{ member.user.fullName|avatar_color }};">
+                        {{ member.user.fullName|initials }}
+                    </span>
+                    <div>
+                        <div class="df-team-name">{{ member.user.fullName }}</div>
+                        <div class="df-team-email">{{ member.user.email }}</div>
+                    </div>
+                </div>
+
+                <div class="df-team-stats">
+                    <div><span>{{ member.total }}</span>Tâches</div>
+                    <div><span>{{ member.inProgress }}</span>En cours</div>
+                    <div><span>{{ member.done }}</span>Terminées</div>
+                    <div class="{{ member.overdue > 0 ? 'text-danger' : '' }}"><span>{{ member.overdue }}</span>En retard</div>
+                </div>
+
+                <div class="df-productivity" style="padding:0;">
+                    <div class="df-productivity-label" style="color:var(--text-muted);">
+                        <span>Productivité</span>
+                        <span>{{ member.productivity }}%</span>
+                    </div>
+                    <div class="df-progress">
+                        <div class="df-progress-bar" style="width: {{ member.productivity }}%"></div>
+                    </div>
+                </div>
+
+                <a href="{{ path('task_index', {assignedTo: member.user.id}) }}" class="df-link mt-2 d-inline-block">Voir ses tâches →</a>
+            </div>
+        {% else %}
+            <p class="text-muted">Aucun membre pour le moment.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

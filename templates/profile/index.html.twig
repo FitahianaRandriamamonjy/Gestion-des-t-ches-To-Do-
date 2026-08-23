@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil - TaskFlow{% endblock %}
+{% block page_title %}Mon profil{% endblock %}
+{% block page_subtitle %}Votre activité personnelle.{% endblock %}
+{% block topbar_actions %}
+    <a href="{{ path('settings_index') }}" class="df-btn-ghost"><i class="bi bi-gear"></i> Paramètres</a>
+{% endblock %}
+
+{% block body %}
+    <div class="df-card mb-3">
+        <div class="df-team-header">
+            <span class="df-avatar-lg" style="background:{{ app.user.fullName|avatar_color }}22; color:{{ app.user.fullName|avatar_color }};">
+                {{ app.user.fullName|initials }}
+            </span>
+            <div>
+                <div class="df-team-name" style="font-size:1.1rem;">{{ app.user.fullName }}</div>
+                <div class="df-team-email">{{ app.user.email }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="df-stats">
+        <div class="df-stat-card">
+            <div class="df-stat-icon purple"><i class="bi bi-check2-square"></i></div>
+            <div class="df-stat-value">{{ stats.total }}</div>
+            <div class="df-stat-label">Tâches assignées</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon blue"><i class="bi bi-pie-chart-fill"></i></div>
+            <div class="df-stat-value">{{ stats.inProgress }}</div>
+            <div class="df-stat-label">En cours</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="df-stat-value">{{ stats.done }}</div>
+            <div class="df-stat-label">Terminées</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon orange"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="df-stat-value">{{ stats.overdue }}</div>
+            <div class="df-stat-label">En retard</div>
+        </div>
+    </div>
+
+    <div class="df-card mt-3">
+        <div class="df-card-header"><h2>Mes tâches</h2></div>
+        <table class="df-table">
+            <thead>
+                <tr><th>Tâche</th><th>Priorité</th><th>Échéance</th><th>Statut</th></tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td class="df-task-title"><a href="{{ path('task_show', {id: task.id}) }}">{{ task.title }}</a></td>
+                    <td><span class="df-badge {{ task.priority.value == 'high' ? 'high' : (task.priority.value == 'medium' ? 'medium' : 'low') }}">{{ task.priority.label }}</span></td>
+                    <td>{{ task.dueDate ? task.dueDate|date('d/m/Y') : '—' }}</td>
+                    <td><span class="df-status {{ task.isOverdue ? 'overdue' : task.status.value }}"><i></i> {{ task.isOverdue ? 'En retard' : task.status.label }}</span></td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="text-center text-muted py-4">Aucune tâche assignée.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

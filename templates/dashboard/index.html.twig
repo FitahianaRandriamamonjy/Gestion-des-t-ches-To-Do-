@@ -1,0 +1,251 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - TaskFlow{% endblock %}
+
+{% block page_title %}Bonjour, {{ app.user ? app.user.fullName : 'Invité' }} 👋{% endblock %}
+{% block page_subtitle %}Voici ce qui se passe aujourd'hui.{% endblock %}
+
+{% block body %}
+
+    <div class="df-stats">
+        <div class="df-stat-card">
+            <div class="df-stat-icon purple"><i class="bi bi-check2-square"></i></div>
+            <div class="df-stat-value">{{ stats.total }}</div>
+            <div class="df-stat-label">Tâches totales</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon blue"><i class="bi bi-pie-chart-fill"></i></div>
+            <div class="df-stat-value">{{ stats.inProgress }}</div>
+            <div class="df-stat-label">En cours</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon orange"><i class="bi bi-clock-fill"></i></div>
+            <div class="df-stat-value">{{ stats.todo }}</div>
+            <div class="df-stat-label">En attente</div>
+        </div>
+        <div class="df-stat-card">
+            <div class="df-stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="df-stat-value">{{ stats.done }}</div>
+            <div class="df-stat-label">Terminées</div>
+        </div>
+    </div>
+
+    <div class="df-content">
+        <div class="df-left">
+            <div class="df-card">
+                <div class="df-card-header">
+                    <h2>Activité</h2>
+                    <div class="df-tabs">
+                        <button type="button" class="active" data-period="week" onclick="dfSwitchPeriod('week')">Semaine</button>
+                        <button type="button" data-period="month" onclick="dfSwitchPeriod('month')">Mois</button>
+                    </div>
+                </div>
+                <div class="df-legend mb-3">
+                    <span class="solid"><i></i> Tâches créées</span>
+                    <span class="dashed"><i></i> Tâches terminées</span>
+                </div>
+                <div class="df-chart-wrap">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="df-card">
+                <div class="df-card-header">
+                    <h2>Tâches récentes</h2>
+                    <a href="{{ path('task_index') }}" class="df-link">Voir toutes</a>
+                </div>
+                <table class="df-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Tâche</th>
+                            <th>Priorité</th>
+                            <th>Échéance</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for task in recentTasks %}
+                        <tr>
+                            <td><input type="checkbox" disabled {{ task.status.value == 'done' ? 'checked' }}></td>
+                            <td class="df-task-title"><a href="{{ path('task_show', {id: task.id}) }}">{{ task.title }}</a></td>
+                            <td>
+                                <span class="df-badge {{ task.priority.value == 'high' ? 'high' : (task.priority.value == 'medium' ? 'medium' : 'low') }}">
+                                    {{ task.priority.label }}
+                                </span>
+                            </td>
+                            <td>{{ task.dueDate ? task.dueDate|date('d M Y') : '—' }}</td>
+                            <td>
+                                <span class="df-status {{ task.isOverdue ? 'overdue' : task.status.value }}">
+                                    <i></i> {{ task.isOverdue ? 'En retard' : task.status.label }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune tâche pour le moment.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <aside class="df-overview">
+            <h2>Vue d'ensemble</h2>
+
+            <div class="df-donut-wrap">
+                <canvas id="productivityDonut" width="128" height="128"></canvas>
+            </div>
+
+            <div>
+                <div class="df-section-title">Prochaines échéances <a href="{{ path('task_index') }}">Voir tout</a></div>
+                <div class="df-deadline-list">
+                    {% for task in upcomingTasks %}
+                        <a href="{{ path('task_show', {id: task.id}) }}" class="df-deadline" style="text-decoration:none; color:inherit;">
+                            <div class="df-deadline-icon"><i class="bi bi-calendar-event"></i></div>
+                            <div style="min-width:0;">
+                                <div class="df-deadline-title">{{ task.title }}</div>
+                                <div class="df-deadline-sub">{{ task.assignedTo ? task.assignedTo.fullName : 'Non assignée' }}</div>
+                            </div>
+                            <div class="df-deadline-date">{{ task.dueDate|date('d M') }}</div>
+                        </a>
+                    {% else %}
+                        <p class="opacity-75 mb-0" style="font-size:.8rem;">Aucune échéance à venir.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <div class="df-section-title">Répartition des tâches</div>
+                <div class="df-distribution">
+                    <canvas id="distributionDonut" width="90" height="90"></canvas>
+                    <div class="df-distribution-legend">
+                        <div><i style="background:#4EA8DE"></i> En cours <span>{{ distribution.in_progress }}%</span></div>
+                        <div><i style="background:#2FBE7F"></i> Terminées <span>{{ distribution.done }}%</span></div>
+                        <div><i style="background:#F5A623"></i> En attente <span>{{ distribution.todo }}%</span></div>
+                        <div><i style="background:#EF5350"></i> En retard <span>{{ distribution.overdue }}%</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="df-cta">
+                <div class="df-cta-icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
+                <p>Continuez comme ça ! Vous êtes à {{ productivity }}% de productivité globale.</p>
+            </div>
+        </aside>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        const purple = '#7C6FEF';
+        const activityData = {
+            week: {
+                labels: {{ activity.labels|json_encode|raw }},
+                created: {{ activity.created|json_encode|raw }},
+                done: {{ activity.done|json_encode|raw }},
+            },
+            month: {
+                labels: {{ activityMonthly.labels|json_encode|raw }},
+                created: {{ activityMonthly.created|json_encode|raw }},
+                done: {{ activityMonthly.done|json_encode|raw }},
+            }
+        };
+
+        const activityChart = new Chart(document.getElementById('activityChart'), {
+            type: 'line',
+            data: {
+                labels: activityData.week.labels,
+                datasets: [
+                    {
+                        label: 'Créées',
+                        data: activityData.week.created,
+                        borderColor: purple,
+                        backgroundColor: 'rgba(124,111,239,0.12)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: purple,
+                    },
+                    {
+                        label: 'Terminées',
+                        data: activityData.week.done,
+                        borderColor: purple,
+                        borderDash: [5, 5],
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: purple,
+                    }
+                ]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#F1F0F8' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        function dfSwitchPeriod(period) {
+            document.querySelectorAll('.df-tabs button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.period === period);
+            });
+            activityChart.data.labels = activityData[period].labels;
+            activityChart.data.datasets[0].data = activityData[period].created;
+            activityChart.data.datasets[1].data = activityData[period].done;
+            activityChart.update();
+        }
+
+        new Chart(document.getElementById('productivityDonut'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [{{ productivity|default(0) }}, {{ 100 - productivity|default(0) }}],
+                    backgroundColor: ['#ffffff', 'rgba(255,255,255,0.25)'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                cutout: '78%',
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            },
+            plugins: [{
+                id: 'centerText',
+                afterDraw(chart) {
+                    const { ctx, chartArea } = chart;
+                    const x = (chartArea.left + chartArea.right) / 2;
+                    const y = (chartArea.top + chartArea.bottom) / 2;
+                    ctx.save();
+                    ctx.fillStyle = '#fff';
+                    ctx.textAlign = 'center';
+                    ctx.font = '700 22px Inter';
+                    ctx.fillText('{{ productivity|default(0) }}%', x, y - 2);
+                    ctx.font = '400 10px Inter';
+                    ctx.fillText('Productivité', x, y + 16);
+                    ctx.restore();
+                }
+            }]
+        });
+
+        new Chart(document.getElementById('distributionDonut'), {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [{{ distribution.in_progress }}, {{ distribution.done }}, {{ distribution.todo }}, {{ distribution.overdue }}],
+                    backgroundColor: ['#4EA8DE', '#2FBE7F', '#F5A623', '#EF5350'],
+                    borderWidth: 3,
+                    borderColor: 'rgba(124,111,239,1)'
+                }]
+            },
+            options: {
+                cutout: '65%',
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+{% endblock %}
