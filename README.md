@@ -28,10 +28,11 @@ TaskFlow est une application web de gestion de tâches en équipe, développée 
 |---|---|
 | Framework | Symfony 7.4 |
 | ORM | Doctrine ORM 3 |
-| Base de données | MySQL 8 |
+| Base de données | MySQL 8 (Local) / PostgreSQL (Production) |
 | Templates | Twig |
 | Frontend | CSS custom (design system "TaskFlow"), Chart.js, Bootstrap Icons |
 | Auth | Symfony Security (form login) |
+| Déploiement | Render (Docker, Web Service & PostgreSQL) |
 
 ## Prérequis
 
@@ -220,6 +221,12 @@ Quelle que soit l'option choisie, pensez à :
 - ne **jamais** committer de vrai `APP_SECRET` ou mot de passe de base de données (utilisez `.env.local` ou les variables d'environnement de la plateforme),
 - exécuter les migrations à chaque déploiement,
 - ne pas charger les fixtures de démonstration en production.
+
+### Option 4 — Render (PaaS)
+
+1. Créez un **Web Service** Docker et une base **PostgreSQL** sur Render.
+2. Configurez les variables d'environnement (`APP_ENV=prod`, `APP_SECRET`, `DATABASE_URL`).
+3. Déployez directement depuis la branche `main` de GitHub.
 
 ## Pistes d'évolution
 
